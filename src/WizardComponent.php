@@ -6,26 +6,24 @@ use Closure;
 use Exception;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 use Livewire\Component;
-use Str;
 use Vildanbina\LivewireWizard\Components\Step;
 use Vildanbina\LivewireWizard\Concerns\HasHooks;
 use Vildanbina\LivewireWizard\Concerns\HasState;
 use Vildanbina\LivewireWizard\Concerns\HasSteps;
 use Vildanbina\LivewireWizard\Contracts\WizardForm;
 
-abstract class WizardComponent extends Component implements WizardForm
-{
+abstract class WizardComponent extends Component implements WizardForm {
     use HasSteps;
     use HasHooks;
     use HasState;
 
-    public bool $saveStepState = true;
-    public null|array|Model $model = null;
-    protected array $cachedSteps = [];
+    public bool             $saveStepState = true;
+    public null|array|Model $model         = null;
+    protected array         $cachedSteps   = [];
 
-    public function __construct($id = null)
-    {
+    public function __construct($id = null) {
         parent::__construct($id);
 
         if ($this->saveStepState) {
@@ -33,8 +31,7 @@ abstract class WizardComponent extends Component implements WizardForm
         }
     }
 
-    public function resetForm(): void
-    {
+    public function resetForm(): void {
         $this->callHook('beforeResetForm');
 
         $this->setStep(array_key_first($this->steps()));
@@ -43,8 +40,7 @@ abstract class WizardComponent extends Component implements WizardForm
         $this->callHook('afterResetForm');
     }
 
-    public function steps(): array
-    {
+    public function steps(): array {
         if (property_exists($this, 'steps')) {
             return $this->steps;
         }
@@ -52,8 +48,7 @@ abstract class WizardComponent extends Component implements WizardForm
         return [];
     }
 
-    public function mount()
-    {
+    public function mount(): void {
         $this->callHook('beforeMount', ...func_get_args());
 
         if (method_exists($this, 'model')) {
@@ -61,11 +56,11 @@ abstract class WizardComponent extends Component implements WizardForm
         }
 
         $this->stepClasses(function (Step $step) {
-            
+
             if (method_exists($this, 'model')) {
                 $step->setModel($this->model);
             }
-            
+
             if (method_exists($step, 'mount')) {
                 $step->mount();
             }
@@ -78,8 +73,7 @@ abstract class WizardComponent extends Component implements WizardForm
         $this->callHook('afterMount', ...func_get_args());
     }
 
-    protected function stepClasses(null|Closure $callback = null): array
-    {
+    protected function stepClasses(null|Closure $callback = null): array {
 
         if (filled($this->cachedSteps)) {
             return collect($this->cachedSteps)
@@ -114,24 +108,31 @@ abstract class WizardComponent extends Component implements WizardForm
         return $this->cachedSteps;
     }
 
-    public function getModel(): ?Model
-    {
+    public function getModel(): ?Model {
         return $this->model;
     }
 
-    public function updated($name, $value): void
-    {
+    /**
+     * @throws Exception
+     */
+    public function updated($name, $value): void {
         $this->callHooksStep('updated', $name, $value);
     }
 
-    private function callHooksStep($hook, $name, $value): void
-    {
+    /**
+     * @throws Exception
+     */
+    private function callHooksStep($hook, $name, $value): void {
         $stepInstance = $this->getCurrentStep();
         $name         = Str::of($name);
 
         $propertyName     = $name->studly()->before('.');
-        $keyAfterFirstDot = $name->contains('.') ? $name->after('.')->__toString() : null;
-        $keyAfterLastDot  = $name->contains('.') ? $name->afterLast('.')->__toString() : null;
+        $keyAfterFirstDot = $name->contains('.')
+            ? $name->after('.')->__toString()
+            : null;
+        $keyAfterLastDot  = $name->contains('.')
+            ? $name->afterLast('.')->__toString()
+            : null;
 
         $beforeMethod = $hook . $propertyName;
 
@@ -146,13 +147,17 @@ abstract class WizardComponent extends Component implements WizardForm
         }
     }
 
-    public function getCurrentStep(): ?Step
-    {
+    /**
+     * @throws Exception
+     */
+    public function getCurrentStep(): ?Step {
         return $this->getStepInstance($this->activeStep);
     }
 
-    public function getStepInstance($step): ?Step
-    {
+    /**
+     * @throws Exception
+     */
+    public function getStepInstance($step): ?Step {
         if (($stepInstance = data_get($this->stepClasses(), $step)) && !$stepInstance instanceof Step) {
             throw new Exception(get_class($stepInstance) . ' must bee ' . Step::class . ' instance');
         }
@@ -160,13 +165,14 @@ abstract class WizardComponent extends Component implements WizardForm
         return $stepInstance;
     }
 
-    public function updating($name, $value): void
-    {
+    /**
+     * @throws Exception
+     */
+    public function updating($name, $value): void {
         $this->callHooksStep('updating', $name, $value);
     }
 
-    public function save(): void
-    {
+    public function save(): void {
         $this->callHook('beforeValidate');
 
         $this->stepsValidation();
@@ -186,15 +192,14 @@ abstract class WizardComponent extends Component implements WizardForm
         $this->callHook('afterSave');
     }
 
-    protected function stepsValidation($step = null): void
-    {
+    protected function stepsValidation($step = null): void {
         [$rules, $messages, $attributes] = [[], [], []];
         $step = $step ?? max(array_keys($this->steps()));
 
         $this->stepClasses(function (Step $stepInstance) use ($step, &$rules, &$messages, &$attributes) {
 
             if (method_exists($stepInstance, 'validate') && $stepInstance->getOrder() <= $step) {
-                $stepValidate = $stepInstance->validate();
+                $stepValidate                  = $stepInstance->validate();
                 $stepInstance->validationFails = !$stepInstance->isValid();
 
                 $rules      = array_merge($rules, $stepValidate[0] ?? []);
@@ -208,13 +213,11 @@ abstract class WizardComponent extends Component implements WizardForm
         }
     }
 
-    public function mutateStateBeforeSave(array $state = []): array
-    {
+    public function mutateStateBeforeSave(array $state = []): array {
         return $state;
     }
 
-    public function render(): View
-    {
+    public function render(): View {
         return view('livewire-wizard::wizard', [
             'stepInstances' => $this->stepClasses(),
         ]);
