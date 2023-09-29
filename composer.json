@@ -1,5 +1,5 @@
 {
-    "name": "vildanbina/livewire-wizard",
+    "name": "emre-one/livewire-wizard",
     "description": "Laravel Livewire Wizard (Multi-Step Form) component",
     "keywords": [
         "laravel",
@@ -8,9 +8,14 @@
         "wizard",
         "form"
     ],
-    "homepage": "https://github.com/vildanbina/livewire-wizard",
+    "homepage": "https://github.com/emre-one/livewire-wizard",
     "license": "MIT",
     "authors": [
+        {
+            "name": "Emre Akguel",
+            "email": "emre.akguel.1@gmail.com",
+            "role": "Developer"
+        },
         {
             "name": "Vildan Bina",
             "email": "vildanbina@gmail.com",
