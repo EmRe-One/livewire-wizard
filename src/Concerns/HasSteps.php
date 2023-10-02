@@ -2,6 +2,7 @@
 
 namespace Vildanbina\LivewireWizard\Concerns;
 
+use Exception;
 use Illuminate\Support\Arr;
 
 trait HasSteps {
@@ -21,10 +22,16 @@ trait HasSteps {
         return $this->activeStep <= $step;
     }
 
+    /**
+     * @throws Exception
+     */
     public function goToNextStep($step = null): void {
         $this->setStep($this->nextStep($step));
     }
 
+    /**
+     * @throws Exception
+     */
     public function setStep($step): void {
         $this->callHook('beforeSetStep', $this->activeStep, $step);
 
@@ -73,6 +80,9 @@ trait HasSteps {
         return count($this->steps());
     }
 
+    /**
+     * @throws Exception
+     */
     public function goToPrevStep($step = null): void {
         $this->setStep($this->prevStep($step));
     }

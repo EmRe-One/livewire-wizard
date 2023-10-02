@@ -11,6 +11,7 @@ use Vildanbina\LivewireWizard\Concerns\HasHooks;
 use Vildanbina\LivewireWizard\Contracts\WizardForm;
 
 abstract class Step extends ViewComponent implements Htmlable {
+
     use BelongsToLivewire;
     use HasHooks;
 
@@ -50,15 +51,15 @@ abstract class Step extends ViewComponent implements Htmlable {
         return true;
     }
 
-    public function setState(array $state = []) {
+    public function setState(array $state = []): void {
         $this->getLivewire()->state = $state;
     }
 
-    public function mergeState(array $state = []) {
+    public function mergeState(array $state = []): void {
         $this->getLivewire()->mergeState($state);
     }
 
-    public function putState($key, $value = null, $default = null) {
+    public function putState($key, $value = null, $default = null): void {
         $this->getLivewire()->putState($key, $value, $default);
     }
 

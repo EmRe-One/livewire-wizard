@@ -15,6 +15,7 @@ use Vildanbina\LivewireWizard\Concerns\HasSteps;
 use Vildanbina\LivewireWizard\Contracts\WizardForm;
 
 abstract class WizardComponent extends Component implements WizardForm {
+
     use HasSteps;
     use HasHooks;
     use HasState;
@@ -24,13 +25,19 @@ abstract class WizardComponent extends Component implements WizardForm {
     protected array         $cachedSteps   = [];
 
     public function __construct($id = null) {
-        parent::__construct($id);
+        if (isset($id)) parent::setId($id);
 
         if ($this->saveStepState) {
+            if (!isset($this->queryString)) {
+                $this->queryString = [];
+            }
             $this->queryString[] = 'activeStep';
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function resetForm(): void {
         $this->callHook('beforeResetForm');
 
